@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Application Security Interactive Lab</title>
+    <style>
+        :root {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-card: #334155;
+            --border: #475569;
+            --text: #f8fafc;
+            --text-muted: #94a3b8;
+            --accent-red: #ef4444;
+            --accent-green: #10b981;
+            --accent-cyan: #06b6d4;
+            --accent-blue: #3b82f6;
+        }
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; }
+        body { background-color: var(--bg-primary); color: var(--text); padding: 25px; }
+        .header { display: flex; justify-content: space-between; align-items: center; background: var(--bg-secondary); border: 1px solid var(--border); padding: 15px 25px; border-radius: 10px; margin-bottom: 25px; }
+        .header h1 { font-size: 1.5rem; color: var(--accent-cyan); }
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(450px, 1fr)); gap: 20px; }
+        .card { background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 10px; padding: 20px; }
+        .card h2 { font-size: 1.2rem; color: var(--accent-cyan); margin-bottom: 15px; border-bottom: 1px solid var(--border); padding-bottom: 10px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-size: 0.85rem; color: var(--text-muted); margin-bottom: 5px; font-weight: 600; }
+        input, select, button { width: 100%; padding: 10px 14px; background: var(--bg-primary); border: 1px solid var(--border); border-radius: 6px; color: var(--text); font-size: 0.9rem; }
+        button { background: var(--accent-blue); border: none; font-weight: 600; cursor: pointer; margin-top: 8px; }
+        button:hover { opacity: 0.9; }
+        .side-by-side { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 15px; }
+        .pane { padding: 12px; border-radius: 8px; font-size: 0.8rem; }
+        .pane-vuln { background: rgba(239, 68, 68, 0.1); border: 1px solid var(--accent-red); }
+        .pane-sec { background: rgba(16, 185, 129, 0.1); border: 1px solid var(--accent-green); }
+        .code-box { background: var(--bg-primary); padding: 8px; border-radius: 4px; font-family: monospace; font-size: 0.75rem; color: #f1f5f9; overflow-x: auto; margin-top: 5px; }
+        .badge { padding: 3px 6px; border-radius: 4px; font-size: 0.7rem; font-weight: 700; display: inline-block; margin-bottom: 6px; }
+        .badge-red { background: rgba(239, 68, 68, 0.2); color: var(--accent-red); }
+        .badge-green { background: rgba(16, 185, 129, 0.2); color: var(--accent-green); }
+    </style>
+</head>
+<body>
+
+<div class="header">
+    <h1>🛡️ Application Security Vulnerability & Mitigation Playground</h1>
+    <span style="font-size:0.85rem; color:var(--accent-green);">OWASP Security Controls Lab</span>
+</div>
+
+<div class="grid">
+    <!-- Module 1: SQL Injection -->
+    <div class="card">
+        <h2>1. SQL Injection (SQLi)</h2>
+        <div class="form-group">
+            <label for="sqliInput">Search Username Input</label>
+            <input type="text" id="sqliInput" value="admin' OR '1'='1">
+            <button onclick="testSQLi()">Execute Query Payload</button>
+        </div>
+        <div class="side-by-side" id="sqliResults" style="display: none;">
+            <div class="pane pane-vuln">
+                <span class="badge badge-red">UNCONSTRAINED SQL CONCATENATION</span>
+                <div style="font-weight:600;" id="sqliVulnStatus"></div>
+                <div class="code-box" id="sqliVulnQuery"></div>
+                <div class="code-box" id="sqliVulnData"></div>
+            </div>
+            <div class="pane pane-sec">
+                <span class="badge badge-green">PARAMETERIZED PREPARED STATEMENT</span>
+                <div style="font-weight:600;" id="sqliSecStatus"></div>
+                <div class="code-box" id="sqliSecQuery"></div>
+                <div class="code-box" id="sqliSecData"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Module 2: Cross-Site Scripting -->
+    <div class="card">
+        <h2>2. Cross-Site Scripting (XSS)</h2>
+        <div class="form-group">
+            <label for="xssInput">User Comment / Input</label>
+            <input type="text" id="xssInput" value="<script>alert('XSS Exploit')</script>">
+            <button onclick="testXSS()">Submit Comment Vector</button>
+        </div>
+        <div class="side-by-side" id="xssResults" style="display: none;">
+            <div class="pane pane-vuln">
+                <span class="badge badge-red">RAW UNESCAPED RENDERING</span>
+                <div style="font-weight:600;" id="xssVulnStatus"></div>
+                <div class="code-box" id="xssVulnHtml"></div>
+            </div>
+            <div class="pane pane-sec">
+                <span class="badge badge-green">HTML ENTITY ENCODED</span>
+                <div style="font-weight:600;" id="xssSecStatus"></div>
+                <div class="code-box" id="xssSecHtml"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Module 3: IDOR / Broken Access Control -->
+    <div class="card">
+        <h2>3. IDOR & Access Control</h2>
+        <div style="display:flex; gap:10px;">
+            <div class="form-group" style="flex:1;">
+                <label for="idorReqId">Target User ID</label>
+                <input type="number" id="idorReqId" value="1">
+            </div>
+            <div class="form-group" style="flex:1;">
+                <label for="idorLoggedId">My User ID</label>
+                <input type="number" id="idorLoggedId" value="2">
+            </div>
+            <div class="form-group" style="flex:1;">
+                <label for="idorRole">My Role</label>
+                <select id="idorRole">
+                    <option value="User">Standard User</option>
+                    <option value="Admin">Admin</option>
+                </select>
+            </div>
+        </div>
+        <button onclick="testIDOR()">Access User Record</button>
+        <div class="side-by-side" id="idorResults" style="display: none;">
+            <div class="pane pane-vuln">
+                <span class="badge badge-red">INSECURE DIRECT OBJECT REF</span>
+                <div style="font-weight:600;" id="idorVulnStatus"></div>
+                <div class="code-box" id="idorVulnData"></div>
+            </div>
+            <div class="pane pane-sec">
+                <span class="badge badge-green">RBAC OWNERSHIP CHECK</span>
+                <div style="font-weight:600;" id="idorSecStatus"></div>
+                <div class="code-box" id="idorSecData"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Module 4: Command Injection -->
+    <div class="card">
+        <h2>4. Command Injection & Input Validation</h2>
+        <div class="form-group">
+            <label for="cmdInput">Domain to Ping</label>
+            <input type="text" id="cmdInput" value="google.com; cat /etc/passwd">
+            <button onclick="testCmd()">Validate Domain Input</button>
+        </div>
+        <div class="side-by-side" id="cmdResults" style="display: none;">
+            <div class="pane pane-vuln">
+                <span class="badge badge-red">SHELL CONCATENATION</span>
+                <div style="font-weight:600;" id="cmdVulnStatus"></div>
+                <div class="code-box" id="cmdVulnStr"></div>
+            </div>
+            <div class="pane pane-sec">
+                <span class="badge badge-green">WHITELIST REGEX VALIDATION</span>
+                <div style="font-weight:600;" id="cmdSecStatus"></div>
+                <div class="code-box" id="cmdSecStr"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    async function testSQLi() {
+        const user_input = document.getElementById('sqliInput').value;
+        const res = await fetch('/api/demo/sqli', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_input })
+        });
+        const data = await res.json();
+        document.getElementById('sqliResults').style.display = 'grid';
+        document.getElementById('sqliVulnStatus').innerText = data.vulnerable.status;
+        document.getElementById('sqliVulnQuery').innerText = data.vulnerable.executed_query;
+        document.getElementById('sqliVulnData').innerText = JSON.stringify(data.vulnerable.results, null, 2);
+
+        document.getElementById('sqliSecStatus').innerText = data.secure.status;
+        document.getElementById('sqliSecQuery').innerText = data.secure.executed_query;
+        document.getElementById('sqliSecData').innerText = JSON.stringify(data.secure.results, null, 2);
+    }
+
+    async function testXSS() {
+        const user_input = document.getElementById('xssInput').value;
+        const res = await fetch('/api/demo/xss', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ user_input })
+        });
+        const data = await res.json();
+        document.getElementById('xssResults').style.display = 'grid';
+        document.getElementById('xssVulnStatus').innerText = data.vulnerable.status;
+        document.getElementById('xssVulnHtml').innerText = data.vulnerable.rendered_html;
+
+        document.getElementById('xssSecStatus').innerText = data.secure.status;
+        document.getElementById('xssSecHtml').innerText = data.secure.rendered_html;
+    }
+
+    async function testIDOR() {
+        const requested_user_id = parseInt(document.getElementById('idorReqId').value);
+        const current_user_id = parseInt(document.getElementById('idorLoggedId').value);
+        const current_role = document.getElementById('idorRole').value;
+
+        const res = await fetch('/api/demo/idor', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ requested_user_id, current_user_id, current_role })
+        });
+        const data = await res.json();
+        document.getElementById('idorResults').style.display = 'grid';
+        document.getElementById('idorVulnStatus').innerText = data.vulnerable.status;
+        document.getElementById('idorVulnData').innerText = JSON.stringify(data.vulnerable.data, null, 2);
+
+        document.getElementById('idorSecStatus').innerText = data.secure.status;
+        document.getElementById('idorSecData').innerText = JSON.stringify(data.secure.data, null, 2);
+    }
+
+    async function testCmd() {
+        const target_domain = document.getElementById('cmdInput').value;
+        const res = await fetch('/api/demo/command-injection', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ target_domain })
+        });
+        const data = await res.json();
+        document.getElementById('cmdResults').style.display = 'grid';
+        document.getElementById('cmdVulnStatus').innerText = data.vulnerable.status;
+        document.getElementById('cmdVulnStr').innerText = data.vulnerable.command_str;
+
+        document.getElementById('cmdSecStatus').innerText = data.secure.status;
+        document.getElementById('cmdSecStr').innerText = JSON.stringify(data.secure.command_args);
+    }
+</script>
+</body>
+</html>

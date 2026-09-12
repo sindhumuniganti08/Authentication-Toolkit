@@ -1,0 +1,24 @@
+{
+  "name": "authentication-toolkit-appsec",
+  "version": "1.0.0",
+  "description": "Application Security & Authentication Toolkit Demonstration Project",
+  "main": "backend/app.py",
+  "scripts": {
+    "start": "python backend/app.py",
+    "dev": "python backend/app.py",
+    "cli": "python backend/cli.py"
+  },
+  "keywords": [
+    "cybersecurity",
+    "authentication",
+    "application-security",
+    "owasp",
+    "sqli-prevention",
+    "xss-sanitization",
+    "rbac",
+    "jwt",
+    "bcrypt"
+  ],
+  "author": "sindhumuniganti08",
+  "license": "MIT"
+}
