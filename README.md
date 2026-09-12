@@ -38,3 +38,20 @@ project-1-auth-toolkit/
 ├── package.json        # Project metadata & script definitions
 ├── .gitignore          # Excludes virtual environments, secrets, and temp files
 └── README.md           # Documentation
+## 🚀 Quick Start Guide
+
+### 1. Install Dependencies
+```bash
+py -m pip install -r ..\requirements.txt
+2. Run Web UI Dashboard & REST API
+bash
+py app.py
+Open your browser at: http://localhost:8001
+3. Run Interactive CLI Tool
+bash
+py cli.py
+You can copy and paste the entire `README.md` block directly into your project!
+10:45 PM
+
+
+
